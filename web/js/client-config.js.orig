@@ -1,0 +1,3 @@
+var clientConfig = {};
+
+clientConfig.wsUri = "wss://geekhub.local:8080/";
