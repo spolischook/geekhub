@@ -1,0 +1,18 @@
+{
+  "name": "gitstats",
+  "version": "1.0.0",
+  "description": "Statistics and chat for geekhub users",
+  "main": "web/index.js",
+  "dependencies": {
+    "ws": "^0.8.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "github"
+  ],
+  "author": "Serhii Polishchuk",
+  "license": "MIT"
+}
