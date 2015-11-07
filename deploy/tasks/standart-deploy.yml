@@ -1,0 +1,29 @@
+---
+- name: Create the release {{release_dir}} directory.
+  file: state=directory path={{project_root}}/releases/{{release_dir}} owner={{ user }} group={{ user }}
+
+- name: Create the shared directory.
+  file: state=directory path={{project_root}}/shared owner={{ user }} group={{ user }}
+
+- name: Create the shared/node_modules directory.
+  file: state=directory path={{project_root}}/shared/node_modules owner={{ user }} group={{ user }}
+
+- name: Pull sources from the repository.
+  git: repo={{git_repository}} dest={{project_root}}/releases/{{release_dir}} version={{git_branch}}
+
+- name: Check if shared/config.js exists
+  stat: path={{project_root}}/shared/config.js
+  register: config_js
+
+- name: Create symlink for config.js from shared directory
+  shell: ln -s {{project_root}}/shared/config.js {{project_root}}/releases/{{release_dir}}/config.js creates={{project_root}}/releases/{{release_dir}}/config.js
+  when: config_js.stat.exists
+
+- name: Create node_modules symlink
+  file: state=link src={{project_root}}/shared/node_modules path={{project_root}}/releases/{{release_dir}}/node_modules owner={{ user }} group={{ user }}
+
+- name: Run npm install
+  npm:  path={{project_root}}/releases/{{release_dir}}
+
+#- name: Run migrations
+#  shell: cd {{project_root}}/releases/{{release_dir}} && if $(grep doctrine-migrations-bundle composer.json); then {{symfony2_project_php_path}} app/console doctrine:migrations:migrate -n; fi

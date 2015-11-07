@@ -1,0 +1,23 @@
+---
+- hosts: chedream2
+  remote_user: root
+  vars:
+    project_root: /var/www/geekhub.pp.ua
+    git_repository: https://github.com/spolischook/geekhub
+    git_branch: master
+    user: www-data
+    keep_releases: 3
+    project_env: staging
+
+  tasks:
+    - name: Get timestamp
+      command: date +%Y%m%d%H%M%S
+      register: timestamp
+
+    - name: Get release dir name
+      set_fact:
+        release_dir: "{{timestamp.stdout}}"
+
+    - include: tasks/standart-deploy.yml
+    - include: tasks/cleanup.yml
+    - include: tasks/symlink.yml
