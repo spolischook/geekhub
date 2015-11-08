@@ -19,5 +19,21 @@
         release_dir: "{{timestamp.stdout}}"
 
     - include: tasks/standart-deploy.yml
+
+    - name: "Install forever (to run Node.js app)."
+      npm: name=forever global=yes state=latest
+
+    - name: "Check list of Node.js apps running."
+      command: forever list
+      register: forever_list
+      changed_when: false
+
+    - name: "Stop Node.js app."
+      command: forever stopall
+      ignore_errors: yes
+
+    - name: "Start Node.js app."
+      command: forever start {{project_root}}/releases/{{release_dir}}/index.js
+
     - include: tasks/cleanup.yml
     - include: tasks/symlink.yml

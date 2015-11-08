@@ -11,13 +11,11 @@
 - name: Pull sources from the repository.
   git: repo={{git_repository}} dest={{project_root}}/releases/{{release_dir}} version={{git_branch}}
 
-- name: Check if shared/config.js exists
-  stat: path={{project_root}}/shared/config.js
-  register: config_js
-
 - name: Create symlink for config.js from shared directory
   shell: ln -s {{project_root}}/shared/config.js {{project_root}}/releases/{{release_dir}}/config.js creates={{project_root}}/releases/{{release_dir}}/config.js
-  when: config_js.stat.exists
+
+- name: Create symlink for client-config.js from shared directory
+  shell: ln -s {{project_root}}/shared/web/js/client-config.js {{project_root}}/releases/{{release_dir}}/web/js/client-config.js creates={{project_root}}/releases/{{release_dir}}/web/js/client-config.js
 
 - name: Create node_modules symlink
   file: state=link src={{project_root}}/shared/node_modules path={{project_root}}/releases/{{release_dir}}/node_modules owner={{ user }} group={{ user }}
