@@ -1,6 +1,4 @@
-var config = {};
-
-config.ws = {
+module.exports = {
   "ssl": true,
   "port": 8080,
   "ssl_key": "./server.key",
