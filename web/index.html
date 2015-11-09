@@ -65,8 +65,8 @@
     }
     window.addEventListener("load", init, false);
 </script>
-<h2>WebSocket Test</h2>
+<h2>GeekHub Chat</h2>
 
 <div style="overflow-y: scroll; height:400px;" id="output"></div>
-<input id="message" onkeydown="if (event.keyCode == 13) document.getElementById('send-message').click()"></input>
+<input id="message" onkeydown="if (event.keyCode == 13) document.getElementById('send-message').click()" />
 <button id="send-message" onclick="sendMessage();">Send</button>
