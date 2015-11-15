@@ -1,0 +1,13 @@
+ssl = true
+port = 8080
+ssl_key = "./server.key"
+ssl_cert = "./server.crt"
+db = "geekhub"
+github_client_id = "964372314ad70c8b1e9c"
+github_client_secret = "2af2c2204e9553a23c073c4680f5a0c8c5ddc133"
+
+[Users]
+users[] = spolischook
+users[] = Etheriq
+users[] = ahonymous
+users[] = cystbear
