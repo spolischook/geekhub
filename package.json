@@ -4,9 +4,15 @@
   "description": "Statistics and chat for geekhub users",
   "main": "web/index.js",
   "dependencies": {
+    "ini": "^1.3.4",
+    "kerberos": "0.0.17",
+    "mongodb": "^2.0.48",
     "ws": "^0.8.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-minify": "0.0.5"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
