@@ -5,6 +5,10 @@
 <script language="javascript" type="text/javascript">
     var output;
 
+    if (!getToken()) {
+        window.location.assign("/authenticate")
+    }
+
     function init() {
         output = document.getElementById("output");
         testWebSocket();
@@ -35,11 +39,19 @@
     }
 
     function onMessage(evt) {
-        writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data + '</span>'); 
+        var message = JSON.parse(evt.data);
+
+        writeToScreen(sprintf('[%date%] <span style="color: blue;">%name%:</span> %message%', [
+                ['%date%', message.dateTime],
+                ['%name%', message.user.name],
+                ['%message%', message.text]
+        ]));
     }
 
     function onError(evt) {
         writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
+//        document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC";
+//        window.location.assign("/authenticate");
     }
 
     function doSend(message) {
@@ -63,6 +75,37 @@
 
     }
     window.addEventListener("load", init, false);
+    function getToken() {
+        var cookies = parseCookies();
+        return cookies.token
+    }
+
+    function parseCookies () {
+        var list = {},
+                rc = document.cookie;
+
+        rc && rc.split(';').forEach(function( cookie ) {
+            var parts = cookie.split('=');
+            list[parts.shift().trim()] = decodeURI(parts.join('='));
+        });
+
+        return list;
+    }
+
+    // sprintf('You have %count% new emails from %name%!', [
+    //   ['%count%', user.email.count],
+    //   ['%name%', user.firstName]
+    // ]);
+
+    var sprintf = function(str, replacementList) {
+        if (typeof(replacementList)==='undefined') replacementList = [];
+        var replacementTuple = replacementList.shift();
+
+        if (replacementTuple)
+            return sprintf(str.replace(replacementTuple[0], replacementTuple[1]), replacementList);
+        else
+            return str;
+    };
 </script>
 <h2>GeekHub Chat</h2>
 

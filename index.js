@@ -1,24 +1,85 @@
 var fs              = require("fs"),
-    config          = require("./config.js"),
+    ini             = require('ini'),
+    config          = ini.parse(fs.readFileSync('config.ini', 'utf8')),
     httpServ        = require('https'),
     app             = createSecureApp(httpServ, config),
     WebSocketServer = require('ws').Server,
-    wss             = new WebSocketServer({server: app});
+    MongoClient     = require('mongodb').MongoClient,
+    dbUrl           = 'mongodb://localhost:27017/'+config.db,
+    assert          = require('assert'),
+    wss             = new WebSocketServer({server: app, verifyClient: authenticate});
 
 wss.on('connection', function(ws) {
-    var broadcast = function(message) {
-        log("BROADCAST", message);
+    var user,
+        token = getToken(ws.upgradeReq);
+
+    MongoClient.connect(dbUrl, function(err, db) {
+        assert.equal(null, err);
+        var collection = db.collection('users');
+
+        collection.find({token: token}).limit(1).toArray(function(err, docs) {
+            assert.equal(err, null);
+            user = docs.shift();
+
+            ws.on('message', function(message) { log(user, "WS-EVENT-MESSAGE", broadcast(user, message)); });
+            ws.on('close',   function(message) { log(user, "WS-EVENT-CLOSE",   broadcast(user, message)); });
+        });
+    });
+
+    var broadcast = function(user, text) {
+        var message = {user: user, dateTime: new Date(), text: text};
+
         wss.clients.forEach(function each(client) {
-            client.send(message);
+            client.send(JSON.stringify(message));
         });
 
-        return message;
+        return message.text;
     };
-
-    ws.on('message', function(message) { log("WS-EVENT-MESSAGE", broadcast(message)); });
-    ws.on('close',   function(message) { log("WS-EVENT-CLOSE",   broadcast(message)); });
-    ws.send('You are connected!');
 });
+
+function authenticate(info, cb) {
+    var token = getToken(info.req);
+
+    if (!token) {
+        cb(false, 401);
+        return;
+    }
+
+    MongoClient.connect(dbUrl, function(err, db) {
+        assert.equal(null, err);
+        var collection = db.collection('users');
+
+        collection.find({token: token}).limit(1).toArray(function(err, docs) {
+            assert.equal(err, null);
+            var user = docs.shift();
+
+            if (!user) {
+                cb(false, 401);
+            } else {
+                cb(true);
+            }
+        });
+    });
+
+}
+
+function getToken(req) {
+    var cookies = parseCookies(req);
+
+    return cookies.token
+}
+
+function parseCookies (request) {
+    var list = {},
+        rc = request.headers.cookie;
+
+    rc && rc.split(';').forEach(function( cookie ) {
+        var parts = cookie.split('=');
+        list[parts.shift().trim()] = decodeURI(parts.join('='));
+    });
+
+    return list;
+}
 
 function createSecureApp(httpServ, config) {
     var processRequest = function(req, res) {
@@ -31,6 +92,14 @@ function createSecureApp(httpServ, config) {
     }, processRequest).listen(config.port);
 }
 
-function log(method, message) {
-    console.log('%s|%s|%s', new Date(), method, message);
+function log(user, method, message) {
+    console.log('%s|%s|%s|%s', new Date(), method, user.login, message);
 }
+
+var rand = function() {
+    return Math.random().toString(36).substr(2); // remove `0.`
+};
+
+var token = function() {
+    return rand() + rand(); // to make it longer
+};
